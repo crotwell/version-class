@@ -7,7 +7,7 @@ import java.util.Date;
 import java.text.SimpleDateFormat;
 
 class VersionClassPlugin implements Plugin<Project>  {
-        
+
         VersionClassPlugin() {
         }
 
@@ -30,14 +30,16 @@ class VersionClassPlugin implements Plugin<Project>  {
         def String taskName() {
             return 'makeVersionClass'
         }
-        
+
         def void apply(Project project) {
             project.getPlugins().apply( JavaPlugin.class )
             def generatedSrcDir = getGenSrcDir(project)
-                
+
             def makeVersionClassTask = project.task(taskName()) {
               doLast {
-                def now = new Date()
+                def df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                df.setTimeZone(TimeZone.getTimeZone("UTC"));
+                def now = df.format(new Date());
                 def outFilename = "java/"+project.group.replace('.','/')+"/"+project.name.replace('-','/')+"/BuildVersion.java"
                 def outFile = new File(generatedSrcDir, outFilename)
                 outFile.getParentFile().mkdirs()
@@ -46,8 +48,8 @@ class VersionClassPlugin implements Plugin<Project>  {
                 f.write("""
 /**
  * Simple class for storing the version derived from the gradle build.gradle file.
- * 
- */ 
+ *
+ */
 public class BuildVersion {
 
     private static final String version = \""""+getVersionString(project)+"""\";
@@ -75,8 +77,8 @@ public class BuildVersion {
         return getGroup()+":"+getName()+":"+getVersion()+" "+getDate();
     }
 """)
-                        
-                f.write("}\n") 
+
+                f.write("}\n")
                 f.close()
             }
             project.sourceSets {
