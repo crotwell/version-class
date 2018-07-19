@@ -50,7 +50,7 @@ class VersionClassPlugin implements Plugin<Project>  {
                 def git_short_sha = ""
                 def git_date = ""
                 //def outFilename = "java/"+project.group.replace('.','/')+"/"+project.name.replace('-','/')+"/BuildVersion.java"
-                def outFilename = buildVersionFilename
+                def outFilename = getBuildVersionFilename(project)
                 def outFile = new File(generatedSrcDir, outFilename)
                 outFile.getParentFile().mkdirs()
 
@@ -167,7 +167,9 @@ public class BuildVersion {
             makeVersionClassTask.ext.generatedSrcDir = generatedSrcDir
             makeVersionClassTask.getInputs().files(project.sourceSets.main.getAllSource() )
             makeVersionClassTask.getInputs().property("project version", { project.version })
-            makeVersionClassTask.getOutputs().files(new File(generatedSrcDir, buildVersionFilename))
+            project.afterEvaluate {
+              makeVersionClassTask.getOutputs().files(new File(generatedSrcDir, getBuildVersionFilename(project)))
+            }
             if (project.getBuildFile() != null && project.getBuildFile().exists()) {
                 makeVersionClassTask.getInputs().files(project.getBuildFile())
             }
