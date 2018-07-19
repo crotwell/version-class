@@ -27,6 +27,10 @@ class VersionClassPlugin implements Plugin<Project>  {
             return new File(project.buildDir, getGenSrc())
         }
 
+        def getBuildVersionFilename(Project project) {
+            return "java/"+project.group.replace('.','/')+"/"+project.name.replace('-','/')+"/BuildVersion.java"
+        }
+
         def String taskName() {
             return 'makeVersionClass'
         }
@@ -34,17 +38,64 @@ class VersionClassPlugin implements Plugin<Project>  {
         def void apply(Project project) {
             project.getPlugins().apply( JavaPlugin.class )
             def generatedSrcDir = getGenSrcDir(project)
+            def buildVersionFilename = getBuildVersionFilename(project)
 
             def makeVersionClassTask = project.task(taskName()) {
               doLast {
                 def df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
                 df.setTimeZone(TimeZone.getTimeZone("UTC"));
                 def now = df.format(new Date());
-                def outFilename = "java/"+project.group.replace('.','/')+"/"+project.name.replace('-','/')+"/BuildVersion.java"
+                def git_revision = ""
+                def git_sha = ""
+                def git_short_sha = ""
+                def git_date = ""
+                //def outFilename = "java/"+project.group.replace('.','/')+"/"+project.name.replace('-','/')+"/BuildVersion.java"
+                def outFilename = buildVersionFilename
                 def outFile = new File(generatedSrcDir, outFilename)
                 outFile.getParentFile().mkdirs()
+
+
+                                try {
+                                    def proc = 'git rev-list --count HEAD'.execute()
+                                    proc.consumeProcessErrorStream(new StringBuffer())
+                                    proc.waitFor()
+                                    if( proc.exitValue() != 0 )
+                                        throw new IOException();
+                                    git_revision = proc.text.trim()
+                                } catch (IOException ignore) {}
+                                try {
+                                    def proc = 'git rev-parse HEAD'.execute()
+                                    proc.consumeProcessErrorStream(new StringBuffer())
+                                    proc.waitFor()
+                                    if( proc.exitValue() != 0 )
+                                        throw new IOException()
+                                    git_sha = proc.text.trim()
+                                } catch (IOException ignore) {}
+
+                                try {
+                                    def proc = 'git rev-parse --short HEAD'.execute()
+                                    proc.consumeProcessErrorStream(new StringBuffer())
+                                    proc.waitFor()
+                                    if( proc.exitValue() != 0 )
+                                        throw new IOException()
+                                    git_short_sha = proc.text.trim()
+                                } catch (IOException ignore) {}
+
+                                try {
+                                    def proc = 'git show -s --format=%cI HEAD'.execute()
+                                    proc.consumeProcessErrorStream(new StringBuffer())
+                                    proc.waitFor()
+                                    if( proc.exitValue() != 0 )
+                                        throw new IOException()
+                                    git_date = proc.text.trim()
+                                } catch (IOException ignore) {}
+
                 def f = new FileWriter(outFile)
-                f.write('package  '+project.group+"."+project.name.replace('-','.')+';\n')
+                if (project.group != null && project.group.length() >0) {
+                    f.write('package  '+project.group+"."+project.name.replace('-','.')+';\n')
+                } else {
+                    f.write('package  '+project.name.replace('-','.')+';\n')
+                }
                 f.write("""
 /**
  * Simple class for storing the version derived from the gradle build.gradle file.
@@ -56,6 +107,10 @@ public class BuildVersion {
     private static final String name = \""""+project.name+"""\";
     private static final String group = \""""+project.group+"""\";
     private static final String date = \""""+now+"""\";
+    private static final String git_revision = \""""+git_revision+"""\";
+    private static final String git_short_sha = \""""+git_short_sha+"""\";
+    private static final String git_sha = \""""+git_sha+"""\";
+    private static final String git_date = \""""+git_date+"""\";
 
     /** returns the version of the project from the gradle build.gradle file. */
     public static String getVersion() {
@@ -73,8 +128,28 @@ public class BuildVersion {
     public static String getDate() {
         return date;
     }
+    /** returns the git revision when this file was generated, usually the last git revision when the project was modified. */
+    public static String getGitRevision() {
+        return git_revision;
+    }
+    /** returns the short git sha when this file was generated, usually the last git revision when the project was modified. */
+    public static String getGitShortSha() {
+        return git_short_sha;
+    }
+    /** returns the git sha when this file was generated, usually the last git revision when the project was modified. */
+    public static String getGitSha() {
+        return git_sha;
+    }
+    /** returns the git date when this file was generated, usually the last git revision when the project was modified. */
+    public static String getGitDate() {
+        return git_date;
+    }
     public static String getDetailedVersion() {
-        return getGroup()+":"+getName()+":"+getVersion()+" "+getDate();
+        String out = getGroup()+":"+getName()+":"+getVersion()+" "+getDate();
+        if (git_revision.length() > 0) {
+            out += " ("+getGitRevision()+" "+getGitShortSha()+")";
+        }
+        return out;
     }
 """)
 
@@ -92,7 +167,7 @@ public class BuildVersion {
             makeVersionClassTask.ext.generatedSrcDir = generatedSrcDir
             makeVersionClassTask.getInputs().files(project.sourceSets.main.getAllSource() )
             makeVersionClassTask.getInputs().property("project version", { project.version })
-            makeVersionClassTask.getOutputs().files(generatedSrcDir)
+            makeVersionClassTask.getOutputs().files(new File(generatedSrcDir, buildVersionFilename))
             if (project.getBuildFile() != null && project.getBuildFile().exists()) {
                 makeVersionClassTask.getInputs().files(project.getBuildFile())
             }
