@@ -8,95 +8,85 @@ import java.text.SimpleDateFormat;
 
 class VersionClassPlugin implements Plugin<Project>  {
 
-        VersionClassPlugin() {
-        }
+    VersionClassPlugin() {
+    }
 
-        def String getVersionString(Project project) {
-            if (project.version.endsWith("-SNAPSHOT")) {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HHmmss")
-                return project.version+"_"+sdf.format(new Date())
+    def String getVersionString(Project project) {
+        if (project.version.endsWith("-SNAPSHOT")) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HHmmss")
+            return project.version+"_"+sdf.format(new Date())
+        }
+        return project.version
+    }
+
+    def getGenSrc() {
+        return 'generated-src/version'
+    }
+
+    def getGenSrcDir(Project project) {
+        return new File(project.buildDir, getGenSrc())
+    }
+
+    def getBuildVersionFilename(Project project) {
+        return "java/"+project.group.replace('.','/')+"/"+project.name.replace('-','/')+"/BuildVersion.java"
+    }
+
+    def String taskName() {
+        return 'makeVersionClass'
+    }
+
+    def String runGitCommand(projectDir, cmd) {
+        def serr = new StringBuilder()
+        try {
+            def proc = cmd.execute([], projectDir)
+            proc.consumeProcessErrorStream(serr)
+            proc.waitFor()
+            if( proc.exitValue() != 0 )
+                throw new IOException();
+            return proc.text.trim()
+        } catch (IOException ignore) {
+            throw new RuntimeException("trouble with "+cmd+": "+serr, ignore)
+        }
+    }
+
+    def void apply(Project project) {
+        project.getPlugins().apply( JavaPlugin.class )
+        def generatedSrcDir = getGenSrcDir(project)
+        def buildVersionFilename = getBuildVersionFilename(project)
+
+        def makeVersionClassTask = project.task(taskName()) {
+          doLast {
+            def df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+            df.setTimeZone(TimeZone.getTimeZone("UTC"));
+            def now = df.format(new Date());
+            def git_revision = ""
+            def git_sha = ""
+            def git_short_sha = ""
+            def git_date = ""
+            //def outFilename = "java/"+project.group.replace('.','/')+"/"+project.name.replace('-','/')+"/BuildVersion.java"
+            def outFilename = getBuildVersionFilename(project)
+            def outFile = new File(generatedSrcDir, outFilename)
+            outFile.getParentFile().mkdirs()
+
+            if (new File(project.projectDir, '.git').exists()) {
+                def cmd
+                cmd = 'git rev-list --count HEAD'
+                git_revision = runGitCommand(project.projectDir, cmd)
+                cmd = 'git rev-parse HEAD'
+                git_sha = runGitCommand(project.projectDir, cmd)
+                cmd = 'git rev-parse --short HEAD'
+                git_short_sha = runGitCommand(project.projectDir, cmd)
+                cmd = 'git show -s --format=%cI HEAD'
+                git_date = runGitCommand(project.projectDir, cmd)
             }
-            return project.version
-        }
 
-        def getGenSrc() {
-            return 'generated-src/version'
-        }
-
-        def getGenSrcDir(Project project) {
-            return new File(project.buildDir, getGenSrc())
-        }
-
-        def getBuildVersionFilename(Project project) {
-            return "java/"+project.group.replace('.','/')+"/"+project.name.replace('-','/')+"/BuildVersion.java"
-        }
-
-        def String taskName() {
-            return 'makeVersionClass'
-        }
-
-        def void apply(Project project) {
-            project.getPlugins().apply( JavaPlugin.class )
-            def generatedSrcDir = getGenSrcDir(project)
-            def buildVersionFilename = getBuildVersionFilename(project)
-
-            def makeVersionClassTask = project.task(taskName()) {
-              doLast {
-                def df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-                df.setTimeZone(TimeZone.getTimeZone("UTC"));
-                def now = df.format(new Date());
-                def git_revision = ""
-                def git_sha = ""
-                def git_short_sha = ""
-                def git_date = ""
-                //def outFilename = "java/"+project.group.replace('.','/')+"/"+project.name.replace('-','/')+"/BuildVersion.java"
-                def outFilename = getBuildVersionFilename(project)
-                def outFile = new File(generatedSrcDir, outFilename)
-                outFile.getParentFile().mkdirs()
-
-
-                                try {
-                                    def proc = 'git rev-list --count HEAD'.execute()
-                                    proc.consumeProcessErrorStream(new StringBuffer())
-                                    proc.waitFor()
-                                    if( proc.exitValue() != 0 )
-                                        throw new IOException();
-                                    git_revision = proc.text.trim()
-                                } catch (IOException ignore) {}
-                                try {
-                                    def proc = 'git rev-parse HEAD'.execute()
-                                    proc.consumeProcessErrorStream(new StringBuffer())
-                                    proc.waitFor()
-                                    if( proc.exitValue() != 0 )
-                                        throw new IOException()
-                                    git_sha = proc.text.trim()
-                                } catch (IOException ignore) {}
-
-                                try {
-                                    def proc = 'git rev-parse --short HEAD'.execute()
-                                    proc.consumeProcessErrorStream(new StringBuffer())
-                                    proc.waitFor()
-                                    if( proc.exitValue() != 0 )
-                                        throw new IOException()
-                                    git_short_sha = proc.text.trim()
-                                } catch (IOException ignore) {}
-
-                                try {
-                                    def proc = 'git show -s --format=%cI HEAD'.execute()
-                                    proc.consumeProcessErrorStream(new StringBuffer())
-                                    proc.waitFor()
-                                    if( proc.exitValue() != 0 )
-                                        throw new IOException()
-                                    git_date = proc.text.trim()
-                                } catch (IOException ignore) {}
-
-                def f = new FileWriter(outFile)
-                if (project.group != null && project.group.length() >0) {
-                    f.write('package  '+project.group+"."+project.name.replace('-','.')+';\n')
-                } else {
-                    f.write('package  '+project.name.replace('-','.')+';\n')
-                }
-                f.write("""
+            def f = new FileWriter(outFile)
+            if (project.group != null && project.group.length() >0) {
+                f.write('package  '+project.group+"."+project.name.replace('-','.')+';\n')
+            } else {
+                f.write('package  '+project.name.replace('-','.')+';\n')
+            }
+            f.write("""
 /**
  * Simple class for storing the version derived from the gradle build.gradle file.
  *

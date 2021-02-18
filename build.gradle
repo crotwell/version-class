@@ -1,37 +1,28 @@
 
 // First, apply the publishing plugin
-buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
-  }
-  dependencies {
-    classpath "com.gradle.publish:plugin-publish-plugin:0.9.10"
-  }
+plugins {
+  id "com.gradle.plugin-publish" version "0.12.0"
+  id 'groovy-gradle-plugin'
+}
+repositories {
+  jcenter()
 }
 
-apply plugin: 'com.gradle.plugin-publish'
-apply plugin: 'java'
-apply plugin: 'groovy'
-apply plugin: 'eclipse'
-apply plugin: 'maven-publish'
-
 group = 'edu.sc.seis'
-version = '1.1.1-SNAPSHOT'
+version = '1.2.0'
 
 dependencies {
     compile gradleApi()
     compile localGroovy()
 }
 
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
+gradlePlugin {
+  plugins {
+    versionClassPlugin {
+      id = 'edu.sc.seis.version-class'
+      implementationClass = 'edu.sc.seis.versionClass.VersionClassPlugin'
     }
+  }
 }
 
 
@@ -39,13 +30,11 @@ pluginBundle {
     website = 'https://github.com/crotwell/version-class'
     vcsUrl = 'https://github.com/crotwell/version-class.git'
     description = 'A Gradle Plugin to create a class containing version info based on the project. '
+    tags = [ 'gradle', 'plugin', 'version-class', 'version', 'java']
 
     plugins {
-      versionClass {
-        id = 'edu.sc.seis.version-class'
+      versionClassPlugin {
         displayName = 'Version Class plugin'
-        tags = [ 'gradle', 'plugin', 'version-class', 'version', 'java']
       }
     }
-
 }
