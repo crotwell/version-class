@@ -1,5 +1,5 @@
 # version-class
-A Gradle Plugin to create a class containing version info based on the project.
+A Gradle [Plugin](https://plugins.gradle.org/plugin/edu.sc.seis.version-class) to create a class containing version info based on the project.
 
 Generates a Java class in `build/generated-src/version/java/<group>/<name>/BuildVersion.java`, adds this directory to the java sourceset 
 and makes this a dependency of compileJava.
