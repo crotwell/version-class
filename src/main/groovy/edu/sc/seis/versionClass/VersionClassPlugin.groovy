@@ -141,6 +141,23 @@ public class BuildVersion {
         }
         return out;
     }
+
+    public static String getVersionAsJSON() {
+        String N = "\\n";
+        String out = "{\\n";
+        out += "  \\"version\\": \\""+getVersion()+"\\","+N;
+        out += "  \\"name\\": \\""+getName()+"\\","+N;
+        out += "  \\"group\\": \\""+getGroup()+"\\","+N;
+        out += "  \\"date\\": \\""+getDate()+"\\","+N;
+        out += "  \\"git\\": {"+N;
+        out += "    \\"revision\\": \\""+getGitRevision()+"\\","+N;
+        out += "    \\"shortsha\\": \\""+getGitShortSha()+"\\","+N;
+        out += "    \\"sha\\": \\""+getGitSha()+"\\","+N;
+        out += "    \\"date\\": \\""+getGitDate()+"\\""+N;
+        out += "  }"+N;
+        out += "}";
+        return out;
+    }
 """)
 
                 f.write("}\n")
