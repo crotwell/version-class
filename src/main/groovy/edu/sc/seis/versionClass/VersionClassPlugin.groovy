@@ -49,12 +49,14 @@ class VersionClassPlugin implements Plugin<Project>  {
         }
     }
 
+
     def void apply(Project project) {
         project.getPlugins().apply( JavaPlugin.class )
         def generatedSrcDir = getGenSrcDir(project)
         def buildVersionFilename = getBuildVersionFilename(project)
 
         def makeVersionClassTask = project.task(taskName()) {
+
           doLast {
             def df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
             df.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -169,6 +171,14 @@ public class BuildVersion {
                         srcDir project.buildDir.name+'/'+getGenSrc()+'/java'
                     }
                 }
+                main {
+                    compileClasspath += version.output
+                    runtimeClasspath += version.output
+                }
+                test {
+                    compileClasspath += version.output
+                    runtimeClasspath += version.output
+                }
             }
           }
             makeVersionClassTask.ext.generatedSrcDir = generatedSrcDir
@@ -184,9 +194,17 @@ public class BuildVersion {
         }
 
         def void addTaskDependency(Project project) {
+            project.getTasks().getByName('compileVersionJava') {
+               dependsOn taskName()
+               source += project.fileTree(dir:new File(project.buildDir, getGenSrc()))
+            }
             project.getTasks().getByName('compileJava') {
                dependsOn taskName()
                source += project.fileTree(dir:new File(project.buildDir, getGenSrc()))
+            }
+            project.getTasks().getByName('jar') {
+               dependsOn taskName()
+               from(project.getSourceSets().getByName("version").output)
             }
         }
 }

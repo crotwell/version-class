@@ -1,7 +1,7 @@
 
 // First, apply the publishing plugin
 plugins {
-  id "com.gradle.plugin-publish" version "0.13.0"
+  id("com.gradle.plugin-publish") version "1.1.0"
   id 'groovy-gradle-plugin'
 }
 repositories {
@@ -9,7 +9,7 @@ repositories {
 }
 
 group = 'edu.sc.seis'
-version = '1.2.2'
+version = '1.2.3'
 
 dependencies {
     implementation gradleApi()
@@ -22,24 +22,24 @@ java {
 }
 
 gradlePlugin {
+    website = "https://github.com/crotwell/version-class"
+    vcsUrl = "https://github.com/crotwell/version-class.git"
   plugins {
-    versionClassPlugin {
+    create("versionClassPlugin") {
       id = 'edu.sc.seis.version-class'
       implementationClass = 'edu.sc.seis.versionClass.VersionClassPlugin'
+        displayName = "Version Class plugin"
+        description = "A Gradle Plugin to create a class containing version info based on the project. "
+        tags = [ "gradle", "plugin", "version-class", "version", "java"]
     }
   }
 }
 
-
-pluginBundle {
-    website = 'https://github.com/crotwell/version-class'
-    vcsUrl = 'https://github.com/crotwell/version-class.git'
-    description = 'A Gradle Plugin to create a class containing version info based on the project. '
-    tags = [ 'gradle', 'plugin', 'version-class', 'version', 'java']
-
-    plugins {
-      versionClassPlugin {
-        displayName = 'Version Class plugin'
-      }
+publishing {
+    repositories {
+        maven {
+            name = "localPluginRepository"
+            url = uri("../local-plugin-repository")
+        }
     }
 }
