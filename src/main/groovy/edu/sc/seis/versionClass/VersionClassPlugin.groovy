@@ -166,23 +166,14 @@ public class BuildVersion {
                 f.close()
             }
             project.sourceSets {
-                version {
-                    java {
-                        srcDir project.buildDir.name+'/'+getGenSrc()+'/java'
-                    }
-                }
                 main {
-                    compileClasspath += version.output
-                    runtimeClasspath += version.output
-                }
-                test {
-                    compileClasspath += version.output
-                    runtimeClasspath += version.output
+                  java {
+                    srcDir(getGenSrcDir(project))
+                    }
                 }
             }
           }
             makeVersionClassTask.ext.generatedSrcDir = generatedSrcDir
-            makeVersionClassTask.getInputs().files(project.sourceSets.main.getAllSource() )
             makeVersionClassTask.getInputs().property("project version", { project.version })
             project.afterEvaluate {
               makeVersionClassTask.getOutputs().files(new File(generatedSrcDir, getBuildVersionFilename(project)))
@@ -194,17 +185,8 @@ public class BuildVersion {
         }
 
         def void addTaskDependency(Project project) {
-            project.getTasks().getByName('compileVersionJava') {
-               dependsOn taskName()
-               source += project.fileTree(dir:new File(project.buildDir, getGenSrc()))
-            }
             project.getTasks().getByName('compileJava') {
                dependsOn taskName()
-               source += project.fileTree(dir:new File(project.buildDir, getGenSrc()))
-            }
-            project.getTasks().getByName('jar') {
-               dependsOn taskName()
-               from(project.getSourceSets().getByName("version").output)
             }
         }
 }
