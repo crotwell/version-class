@@ -36,26 +36,27 @@ public class BuildVersion {
     /** returns the group of the project from the gradle build.gradle file. */
     public static String getGroup() {
         return group;
-    }mple class for storing the version derived from the gradle build.gradle fil    /** returns the date this file was generated, usually the last date that the project was modified. */
+    }
+    /** returns the date this file was generated, usually the last date that the project was modified. */
     public static String getDate() {
         return date;
-    }c class BuildVersion {
+    }
     /** returns the git revision when this file was generated, usually the last git revision when the project was modified. */
-    public static String getGitRevision() {0.1";
-        return git_revision;ing name = "testProject";
-    }rivate static final String group = "gui.test";
+    public static String getGitRevision() {
+        return git_revision;
+    }
     /** returns the short git sha when this file was generated, usually the last git revision when the project was modified. */
-    public static String getGitShortSha() {n = "";
-        return git_short_sha;ng git_short_sha = "";
-    }rivate static final String git_sha = "";
+    public static String getGitShortSha() {
+        return git_short_sha;
+    }
     /** returns the git sha when this file was generated, usually the last git revision when the project was modified. */
     public static String getGitSha() {
-        return git_sha;sion of the project from the gradle build.gradle file. */
-    }ublic static String getVersion() {
+        return git_sha;
+    }
     /** returns the git date when this file was generated, usually the last git revision when the project was modified. */
     public static String getGitDate() {
-        return git_date; of the project from the gradle build.gradle file. */
-    }t/build/generated-src/version/java/gui/test/testProject/BuildVersion.java
+        return git_date;
+    }
     public static String getDetailedVersion() {
         String out = getGroup()+":"+getName()+":"+getVersion()+" "+getDate();
         if (git_revision.length() > 0) {
