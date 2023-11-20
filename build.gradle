@@ -30,7 +30,7 @@ gradlePlugin {
       implementationClass = 'edu.sc.seis.versionClass.VersionClassPlugin'
         displayName = "Version Class plugin"
         description = "A Gradle Plugin to create a class containing version info based on the project. "
-        tags = [ "gradle", "plugin", "version-class", "version", "java"]
+        tags = [ "version-class", "version", "java"]
     }
   }
 }
