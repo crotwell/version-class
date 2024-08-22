@@ -24,6 +24,8 @@ public class BuildVersion {
     private static final String git_short_sha = "";
     private static final String git_sha = "";
     private static final String git_date = "";
+    private static final String git_tag_version = "";
+
 
     /** returns the version of the project from the gradle build.gradle file. */
     public static String getVersion() {
@@ -57,6 +59,12 @@ public class BuildVersion {
     public static String getGitDate() {
         return git_date;
     }
+    
+    /** returns a human-readable name using closet parent git tag */
+    public static String getGitTagVersion() {
+        return git_tag_version;
+    }
+    
     public static String getDetailedVersion() {
         String out = getGroup()+":"+getName()+":"+getVersion()+" "+getDate();
         if (git_revision.length() > 0) {
@@ -76,7 +84,8 @@ public class BuildVersion {
         out += "    \"revision\": \""+getGitRevision()+"\","+N;
         out += "    \"shortsha\": \""+getGitShortSha()+"\","+N;
         out += "    \"sha\": \""+getGitSha()+"\","+N;
-        out += "    \"date\": \""+getGitDate()+"\""+N;
+        out += "    \"date\": \""+getGitDate()+"\","+N;
+        out += "    \"tagVersion\": \""+getGitTagVersion()+"\""+N;
         out += "  }"+N;
         out += "}";
         return out;

@@ -165,7 +165,7 @@ public class BuildVersion {
         out += "    \\"revision\\": \\""+getGitRevision()+"\\","+N;
         out += "    \\"shortsha\\": \\""+getGitShortSha()+"\\","+N;
         out += "    \\"sha\\": \\""+getGitSha()+"\\","+N;
-        out += "    \\"date\\": \\""+getGitDate()+"\\""+N;
+        out += "    \\"date\\": \\""+getGitDate()+"\\","+N;
         out += "    \\"tagVersion\\": \\""+getGitTagVersion()+"\\""+N;
         out += "  }"+N;
         out += "}";
