@@ -65,6 +65,7 @@ class VersionClassPlugin implements Plugin<Project>  {
             def git_sha = ""
             def git_short_sha = ""
             def git_date = ""
+            def git_tag_version = ""
             //def outFilename = "java/"+project.group.replace('.','/')+"/"+project.name.replace('-','/')+"/BuildVersion.java"
             def outFilename = getBuildVersionFilename(project)
             def outFile = new File(generatedSrcDir, outFilename)
@@ -80,6 +81,8 @@ class VersionClassPlugin implements Plugin<Project>  {
                 git_short_sha = runGitCommand(project.projectDir, cmd)
                 cmd = 'git show -s --format=%cI HEAD'
                 git_date = runGitCommand(project.projectDir, cmd)
+                cmd = 'git describe --tags --always --dirty'
+                git_tag_version = runGitCommand(project.projectDir, cmd)
             }
 
             def f = new FileWriter(outFile)
@@ -103,6 +106,7 @@ public class BuildVersion {
     private static final String git_short_sha = \""""+git_short_sha+"""\";
     private static final String git_sha = \""""+git_sha+"""\";
     private static final String git_date = \""""+git_date+"""\";
+    private static final String git_tag_version = \""""+git_tag_version+"""\";
 
     /** returns the version of the project from the gradle build.gradle file. */
     public static String getVersion() {
@@ -136,6 +140,12 @@ public class BuildVersion {
     public static String getGitDate() {
         return git_date;
     }
+    
+    /** returns a human-readable name using closet parent git tag */
+    public static String getGitTagVersion() {
+        return git_tag_version;
+    }
+    
     public static String getDetailedVersion() {
         String out = getGroup()+":"+getName()+":"+getVersion()+" "+getDate();
         if (git_revision.length() > 0) {
@@ -156,6 +166,7 @@ public class BuildVersion {
         out += "    \\"shortsha\\": \\""+getGitShortSha()+"\\","+N;
         out += "    \\"sha\\": \\""+getGitSha()+"\\","+N;
         out += "    \\"date\\": \\""+getGitDate()+"\\""+N;
+        out += "    \\"tagVersion\\": \\""+getGitTagVersion()+"\\""+N;
         out += "  }"+N;
         out += "}";
         return out;
