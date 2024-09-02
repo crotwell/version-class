@@ -24,7 +24,9 @@ public class BuildVersion {
     private static final String git_short_sha = "";
     private static final String git_sha = "";
     private static final String git_date = "";
-    private static final String git_tag_version = "";
+    private static final String git_last_tag = "";
+    private static final String git_last_tag_date = "2023-11-20T17:13:22Z";
+    private static final int git_commits_since_last_tag = 0;
 
 
     /** returns the version of the project from the gradle build.gradle file. */
@@ -60,9 +62,19 @@ public class BuildVersion {
         return git_date;
     }
     
-    /** returns a human-readable name using closet parent git tag */
-    public static String getGitTagVersion() {
-        return git_tag_version;
+    /** returns the closet parent git tag */
+    public static String getGitLastTag() {
+        return git_last_tag;
+    }
+    
+    /** returns date of commit of last git tag */
+    public static String getGitLastTagDate() {
+        return git_last_tag_date;
+    }
+    
+    /** returns number of commits since last git tag */
+    public static int getGitCommitsSinceLastTag() {
+        return git_commits_since_last_tag;
     }
     
     public static String getDetailedVersion() {
@@ -85,7 +97,9 @@ public class BuildVersion {
         out += "    \"shortsha\": \""+getGitShortSha()+"\","+N;
         out += "    \"sha\": \""+getGitSha()+"\","+N;
         out += "    \"date\": \""+getGitDate()+"\","+N;
-        out += "    \"tagVersion\": \""+getGitTagVersion()+"\""+N;
+        out += "    \"lastTag\": \""+getGitLastTag()+"\","+N;
+        out += "    \"lastTagDate\": \""+getGitLastTagDate()+"\","+N;
+        out += "    \"commitsSinceLastTag\": "+getGitCommitsSinceLastTag()+N;
         out += "  }"+N;
         out += "}";
         return out;

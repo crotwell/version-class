@@ -65,7 +65,9 @@ class VersionClassPlugin implements Plugin<Project>  {
             def git_sha = ""
             def git_short_sha = ""
             def git_date = ""
-            def git_tag_version = ""
+            def git_last_tag = ""
+            def git_last_tag_date = ""
+            def git_commits_since_last_tag = ""
             //def outFilename = "java/"+project.group.replace('.','/')+"/"+project.name.replace('-','/')+"/BuildVersion.java"
             def outFilename = getBuildVersionFilename(project)
             def outFile = new File(generatedSrcDir, outFilename)
@@ -81,8 +83,12 @@ class VersionClassPlugin implements Plugin<Project>  {
                 git_short_sha = runGitCommand(project.projectDir, cmd)
                 cmd = 'git show -s --format=%cI HEAD'
                 git_date = runGitCommand(project.projectDir, cmd)
-                cmd = 'git describe --tags --always --dirty'
-                git_tag_version = runGitCommand(project.projectDir, cmd)
+                cmd = 'git describe --tags --abbrev=0 --always'
+                git_last_tag = runGitCommand(project.projectDir, cmd)
+                cmd = "git show -s --format=%cI $git_last_tag --"
+                git_last_tag_date = runGitCommand(project.projectDir, cmd)
+                cmd = "git rev-list $git_last_tag..HEAD --count"
+                git_commits_since_last_tag = runGitCommand(project.projectDir, cmd)
             }
 
             def f = new FileWriter(outFile)
@@ -106,7 +112,9 @@ public class BuildVersion {
     private static final String git_short_sha = \""""+git_short_sha+"""\";
     private static final String git_sha = \""""+git_sha+"""\";
     private static final String git_date = \""""+git_date+"""\";
-    private static final String git_tag_version = \""""+git_tag_version+"""\";
+    private static final String git_last_tag = \""""+git_last_tag+"""\";
+    private static final String git_last_tag_date = \""""+git_last_tag_date+"""\";
+    private static final int git_commits_since_last_tag = """+git_commits_since_last_tag+""";
 
     /** returns the version of the project from the gradle build.gradle file. */
     public static String getVersion() {
@@ -141,9 +149,19 @@ public class BuildVersion {
         return git_date;
     }
     
-    /** returns a human-readable name using closet parent git tag */
-    public static String getGitTagVersion() {
-        return git_tag_version;
+    /** returns the closet parent git tag */
+    public static String getGitLastTag() {
+        return git_last_tag;
+    }
+    
+    /** returns date of commit of last git tag */
+    public static String getGitLastTagDate() {
+        return git_last_tag_date;
+    }
+    
+    /** returns number of commits since last git tag */
+    public static int getGitCommitsSinceLastTag() {
+        return git_commits_since_last_tag;
     }
     
     public static String getDetailedVersion() {
@@ -166,7 +184,9 @@ public class BuildVersion {
         out += "    \\"shortsha\\": \\""+getGitShortSha()+"\\","+N;
         out += "    \\"sha\\": \\""+getGitSha()+"\\","+N;
         out += "    \\"date\\": \\""+getGitDate()+"\\","+N;
-        out += "    \\"tagVersion\\": \\""+getGitTagVersion()+"\\""+N;
+        out += "    \\"lastTag\\": \\""+getGitLastTag()+"\\","+N;
+        out += "    \\"lastTagDate\\": \\""+getGitLastTagDate()+"\\","+N;
+        out += "    \\"commitsSinceLastTag\\": "+getGitCommitsSinceLastTag()+N;
         out += "  }"+N;
         out += "}";
         return out;
