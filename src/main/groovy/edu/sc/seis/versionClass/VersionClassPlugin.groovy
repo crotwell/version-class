@@ -67,7 +67,7 @@ class VersionClassPlugin implements Plugin<Project>  {
             def git_date = ""
             def git_last_tag = ""
             def git_last_tag_date = ""
-            def git_commits_since_last_tag = ""
+            def git_commits_since_last_tag = "-1"
             //def outFilename = "java/"+project.group.replace('.','/')+"/"+project.name.replace('-','/')+"/BuildVersion.java"
             def outFilename = getBuildVersionFilename(project)
             def outFile = new File(generatedSrcDir, outFilename)
