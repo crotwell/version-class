@@ -9,7 +9,7 @@ repositories {
 }
 
 group = 'edu.sc.seis'
-version = '1.4.1-SNAPSHOT'
+version = '1.4.1'
 
 dependencies {
     implementation gradleApi()
