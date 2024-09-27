@@ -85,7 +85,7 @@ class VersionClassPlugin implements Plugin<Project>  {
                 git_date = runGitCommand(project.projectDir, cmd)
                 cmd = 'git describe --tags --abbrev=0 --always'
                 git_last_tag = runGitCommand(project.projectDir, cmd)
-                cmd = "git show -s --format=%cI $git_last_tag --"
+                cmd = "git log -1 --format=%aI $git_last_tag"
                 git_last_tag_date = runGitCommand(project.projectDir, cmd)
                 cmd = "git rev-list $git_last_tag..HEAD --count"
                 git_commits_since_last_tag = runGitCommand(project.projectDir, cmd)
@@ -148,22 +148,22 @@ public class BuildVersion {
     public static String getGitDate() {
         return git_date;
     }
-    
+
     /** returns the closet parent git tag */
     public static String getGitLastTag() {
         return git_last_tag;
     }
-    
+
     /** returns date of commit of last git tag */
     public static String getGitLastTagDate() {
         return git_last_tag_date;
     }
-    
+
     /** returns number of commits since last git tag */
     public static int getGitCommitsSinceLastTag() {
         return git_commits_since_last_tag;
     }
-    
+
     public static String getDetailedVersion() {
         String out = getGroup()+":"+getName()+":"+getVersion()+" "+getDate();
         if (git_revision.length() > 0) {
